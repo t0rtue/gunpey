@@ -410,6 +410,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
       $scope.endPuzzle = false;
       $scope.level = 1;
     }
+    timeBeforeClear = 2000;
     level($scope.level);
   }
 
@@ -417,6 +418,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
     $scope.mode = 'speed';
     $scope.nbCol = 5;
     $scope.nbLine = 10;
+    timeBeforeClear = 1000;
     startMode();
     init();
     check();
