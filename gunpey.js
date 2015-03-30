@@ -18,6 +18,10 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
   $scope.level = 1;
   $scope.endPuzzle = false;
 
+  var timeBeforeClear = 1000;
+  var difficultyThresholdStep = 1000;
+  var difficultyThreshold = difficultyThresholdStep;
+
   var dragging = false;
 
   this.dropCallback = function(event, ui, title, $index) {
@@ -173,6 +177,12 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
       if ($scope.score > $scope.bestScore) {
         $scope.bestScore = $scope.score;
       }
+
+      // Raise difficulty (nb columns) according to score
+      if ($scope.score >= difficultyThreshold) {
+        difficultyThreshold += difficultyThresholdStep;
+        addColumn(5);
+      }
     }
 
     /*********
@@ -231,7 +241,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
       }
 
       if (on) {
-        timeoutClear = setTimeout(clear, 2000);
+        timeoutClear = setTimeout(clear, timeBeforeClear);
       }
   }
 
@@ -314,16 +324,20 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
   function init() {
     $scope.matrix = [];
     for (i=0; i < $scope.nbCol; i++) {
+      addColumn(2);
+    }
+  }
+
+  function addColumn(nbEmpty) {
       var column = [];
       for (j=0; j < $scope.nbLine; j++) {
-        var type = (j < 2 || Math.random() > 0.8) ? 0 : Math.floor(Math.random() * 5);
+        var type = (j < nbEmpty || Math.random() > 0.8) ? 0 : Math.floor(Math.random() * 5);
         column.push({
           'type': type,
           'drag': true
         });
       }
       $scope.matrix.push(column);
-    }
   }
 
     /**************
@@ -385,6 +399,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
     $scope.missed = 0;
     $scope.fail = [];
     $scope.message = "";
+    difficultyThreshold = difficultyThresholdStep;
   }
 
 
