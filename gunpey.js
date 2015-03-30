@@ -179,7 +179,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
       }
 
       // Raise difficulty (nb columns) according to score
-      if ($scope.score >= difficultyThreshold) {
+      if (($scope.score >= difficultyThreshold) && ($scope.matrix.length < 10)) {
         difficultyThreshold += difficultyThresholdStep;
         addColumn(5);
       }
