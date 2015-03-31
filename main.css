@@ -113,3 +113,7 @@ li.drop-hover {
   text-align: center;
   color: #f99;
 }
+
+.btn-large i {
+  margin-top : 0 !important;
+}
