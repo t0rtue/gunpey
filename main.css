@@ -1,3 +1,18 @@
+
+body, button {
+  font-family: 'Aldrich', sans-serif;
+}
+
+.home h3 {
+  border-bottom: 2px solid #333;
+}
+
+.home h2,
+.info-panel h2 {
+  background: #333;
+  color: white;
+}
+
 .contentWrapper {
 
   padding: 10px;

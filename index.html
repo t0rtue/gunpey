@@ -21,6 +21,7 @@
 
     <script src="gunpey.js"></script>
 
+    <link href='http://fonts.googleapis.com/css?family=Aldrich' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="main.css">
 
   </head>
@@ -42,7 +43,7 @@
       <!--
         HOME
       -->
-      <div class='contentWrapper' ng-show="mode=='home'">
+      <div class='contentWrapper home' ng-show="mode=='home'">
         
           <h1>Welcome !</h1>
           Here is my online adaptation of an old puzzle game : Gunpey.
@@ -78,10 +79,10 @@
                 </p>
                 <button ng-click="game.modeSpeed()" class="btn btn-primary btn-large" type="button"><i class="icon-play"></i> Speed mode</button>
             </div>
-            <div class="span6">
-              <img width="40%" src="img/screen/speed.png">
+            <div class="span3">
+              <img width="80%" src="img/screen/speed.png">
             </div>
-            <div class="span12">
+            <div class="span3">
                 <h3>Puzzle</h3>
                 <p>
                   Take your time and clear each stage in only one shot !
@@ -101,7 +102,7 @@
 
           <div class="row-fluid">
 
-            <div class="span3">
+            <div class="span3 info-panel">
               <div ng-show="mode=='speed'">
                 <h2>SCORE : {{score}}</h2>
                 <h3>Best score : {{bestScore}}</h3>
@@ -124,36 +125,38 @@
                     </span>
                 </div>
               </div>
-           </div>
+            </div>
 
-            <div class="board" style="display:inline-block">
-              <div style="text-align:center">
-                  <h1>{{message}}</h1>
+            <div class="span9">
+              <div class=" board" style="display:inline-block">
+                <div style="text-align:center">
+                    <h1>{{message}}</h1>
+                </div>
+
+                 <ul ng-repeat="column in matrix" class="pull-left column-{{id}}" ng-class="{'first-col':$first, 'last-col':$last}" ng-init="id=$index">
+                      <li ng-show="mode=='speed'" class="column-head"><h2 ng-show="fail[id]">X</h2></li>
+                      <li ng-repeat="item in column"
+                          data-drop="true"
+                          ng-model='column'
+                          jqyoui-droppable="{index: {{$index}}, onDrop:'game.dropCallback(item.title, $index)'}"
+                          data-jqyoui-options="{accept:'.on-col-{{id}}', hoverClass:'drop-hover'}">
+
+                      <div
+                          class="thumbnail on-col-{{id}}"
+                          ng-class="{on:item.on}"
+                          data-drag="{{item.drag}}"
+                          data-jqyoui-options="{revert: 'invalid', containment:'.column-{{id}}', cursor:'ns-resize', grid:[50,1]}"
+                          ng-model="column"
+                          jqyoui-draggable="{index: {{$index}},animate:true,onStart:'game.dragStart'}">
+
+                        <img ng-show="item.type" ng-attr-src="img/{{item.type}}{{item.on ? '_light' : ''}}.png"  ></img>
+
+                      </div>
+
+                    </li>
+                 </ul>
+
               </div>
-
-               <ul ng-repeat="column in matrix" class="pull-left column-{{id}}" ng-class="{'first-col':$first, 'last-col':$last}" ng-init="id=$index">
-                    <li ng-show="mode=='speed'" class="column-head"><h2 ng-show="fail[id]">X</h2></li>
-                    <li ng-repeat="item in column"
-                        data-drop="true"
-                        ng-model='column'
-                        jqyoui-droppable="{index: {{$index}}, onDrop:'game.dropCallback(item.title, $index)'}"
-                        data-jqyoui-options="{accept:'.on-col-{{id}}', hoverClass:'drop-hover'}">
-
-                    <div
-                        class="thumbnail on-col-{{id}}"
-                        ng-class="{on:item.on}"
-                        data-drag="{{item.drag}}"
-                        data-jqyoui-options="{revert: 'invalid', containment:'.column-{{id}}', cursor:'ns-resize', grid:[50,1]}"
-                        ng-model="column"
-                        jqyoui-draggable="{index: {{$index}},animate:true,onStart:'game.dragStart'}">
-
-                      <img ng-show="item.type" ng-attr-src="img/{{item.type}}{{item.on ? '_light' : ''}}.png"  ></img>
-
-                    </div>
-
-                  </li>
-               </ul>
-
             </div>
 
           </div> <!-- ROW -->
