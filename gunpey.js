@@ -1,9 +1,7 @@
 
 var App = angular.module('gunpey', ['ngDragDrop']);
 
-App.controller('gameCtrl', function($scope, $timeout, $http) {
-
-  $scope.mode = 'home';
+App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
 
   $scope.matrix = []
   $scope.nbCol = 10;
@@ -23,6 +21,25 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
   var difficultyThreshold = difficultyThresholdStep;
 
   var dragging = false;
+
+  /*
+    Really basic manual routing
+    Launch the mode according to url
+  */
+  function loadMode() {
+    var mode = $location.path().slice(1);
+    var modeHandler = {
+      'speed' : modeSpeed,
+      'puzzle' : modePuzzle,
+      'bonjour' : bonjour
+    }[mode];
+    if (modeHandler) {
+      modeHandler();
+    } else {
+      mode = 'home';
+    }
+    $scope.mode = mode;
+  }
 
   this.dropCallback = function(event, ui, title, $index) {
     check();
@@ -209,11 +226,19 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
         }
       }
     }
-    if ($scope.mode=="speed") {
-      updateScore(count);
-    } else if ($scope.mode=="puzzle") {
-      validateStage(dirty)
+
+    switch ($scope.mode) {
+      case 'speed':
+        updateScore(count);
+        break;
+      case 'puzzle':
+        validateStage(dirty);
+        break;
+      case 'bonjour':
+        validateBonjour(dirty);
+        break;
     }
+
     $scope.$apply();
   }
 
@@ -387,6 +412,14 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
       }
     }
 
+    function validateBonjour(dirty) {
+      if (dirty) {
+        gameover("NOT CLEARED");
+      } else {
+        $scope.message = "WELL DONE !";
+      }
+    }
+
   /*
     MODES
   */
@@ -394,6 +427,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
   var interval;
 
   function startMode() {
+    $location.path($scope.mode);
     clearInterval(interval);
     $scope.score = 0;
     $scope.missed = 0;
@@ -403,7 +437,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
   }
 
 
-  this.modePuzzle = function() {
+  function modePuzzle() {
     $scope.mode = 'puzzle';
     startMode();
     if ($scope.endPuzzle) {
@@ -413,8 +447,9 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
     timeBeforeClear = 2000;
     level($scope.level);
   }
+  this.modePuzzle = modePuzzle;
 
-  this.modeSpeed = function() {
+  function modeSpeed() {
     $scope.mode = 'speed';
     $scope.nbCol = 5;
     $scope.nbLine = 10;
@@ -424,11 +459,26 @@ App.controller('gameCtrl', function($scope, $timeout, $http) {
     check();
     interval = setInterval(update, 5000);
   }
+  this.modeSpeed = modeSpeed;
+
+  function bonjour() {
+    $scope.mode = 'bonjour';
+    startMode();
+    timeBeforeClear = 2000;
+    $scope.week = (new Date()).getWeek();
+    level('week/' + $scope.week);
+  }
+  this.bonjour = bonjour;
 
   this.pause = function() {
     clearInterval(interval);
     clearInterval(timeoutClear);
   }
 
+  loadMode();
 });
 
+Date.prototype.getWeek = function() {
+    var onejan = new Date(this.getFullYear(),0,1);
+    return Math.ceil((((this - onejan) / 86400000) + onejan.getDay()+1)/7);
+}

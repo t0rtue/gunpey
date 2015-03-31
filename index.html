@@ -34,8 +34,9 @@
         <div class="navbar-inner">
           <a class="brand" href="#"  ng-click="mode='home'">Gunpey</a>
           <ul class="nav">
-            <li ng-class="{active : mode=='speed'}"><a href="#" ng-click="game.modeSpeed()">Speed mode</a></li>
-            <li ng-class="{active : mode=='puzzle'}"><a href="#" ng-click="game.modePuzzle()">Puzzle mode</a></li>
+            <li ng-class="{active : mode=='speed'}"><a href="" ng-click="game.modeSpeed()">Speed mode</a></li>
+            <li ng-class="{active : mode=='puzzle'}"><a href="" ng-click="game.modePuzzle()">Puzzle mode</a></li>
+            <li ng-class="{active : mode=='bonjour'}"><a href="" ng-click="game.bonjour()">Bonjour puzzle !</a></li>
           </ul>
         </div>
       </div>
@@ -43,8 +44,8 @@
       <!--
         HOME
       -->
-      <div class='contentWrapper home' ng-show="mode=='home'">
-        
+      <div class='contentWrapper ng-cloak home' ng-show="mode=='home'">
+
           <h1>Welcome !</h1>
           Here is my online adaptation of an old puzzle game : Gunpey.
           <div class="row-fluid">
@@ -103,6 +104,7 @@
           <div class="row-fluid">
 
             <div class="span3 info-panel">
+              <!-- SPEED -->
               <div ng-show="mode=='speed'">
                 <h2>SCORE : {{score}}</h2>
                 <h3>Best score : {{bestScore}}</h3>
@@ -110,6 +112,7 @@
                 <button ng-click="game.modeSpeed()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Restart</button>
                 <!-- <button ng-click="game.pause()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Pause</button> -->
               </div>
+              <!-- PUZZLE -->
               <div ng-show="mode=='puzzle'">
                 <h2>STAGE {{level}}</h2>
                 <button ng-click="game.modePuzzle()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
@@ -124,6 +127,16 @@
                         Vous pouvez écrire en français ;)
                     </span>
                 </div>
+              </div>
+              <!-- BONJOUR -->
+              <div ng-show="mode=='bonjour'">
+                  <h2>Week {{week}}</h2>
+                  <h5>A new puzzle each week!</h5>
+                  <button ng-click="game.bonjour()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
+                  <div style="margin-top:30px;">
+                    <script type="text/javascript" src="http://www.brainyquote.com/link/quotebr.js"></script>
+                    <small><i><a href="http://www.brainyquote.com/quotes_of_the_day.html" target="_blank">more Quotes</a></i></small>
+                  </div>
               </div>
             </div>
 
