@@ -8,12 +8,12 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
   $scope.nbLine = 10;
 
   $scope.score = 0;
-  $scope.bestScore = 0;
+  $scope.bestScore = parseInt(localStorage.getItem("gunpey.bestScore")) || 0;
   $scope.combo = 0;
   $scope.missed = 0;
   $scope.fail = [];
   $scope.message = "";
-  $scope.level = 1;
+  $scope.level = parseInt(localStorage.getItem("gunpey.level")) || 1;
   $scope.endPuzzle = false;
 
   var timeBeforeClear = 1000;
@@ -193,6 +193,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
       $scope.score += combo*combo;
       if ($scope.score > $scope.bestScore) {
         $scope.bestScore = $scope.score;
+        localStorage.setItem('gunpey.bestScore', $scope.bestScore);
       }
 
       // Raise difficulty (nb columns) according to score
@@ -401,6 +402,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
 
     function nextLevel() {
       $scope.level++;
+      localStorage.setItem("gunpey.level", $scope.level);
       level($scope.level);
     }
 
