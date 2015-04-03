@@ -14,6 +14,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular-route.min.js"></script>
 
     <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet">
 
@@ -28,161 +29,18 @@
 
   <body>
 
-    <div ng-controller="gameCtrl as game">
-
-      <div class="navbar">
+      <div class="navbar" ng-controller="menuCtrl">
         <div class="navbar-inner">
-          <a class="brand" href="#"  ng-click="mode='home'">Gunpey</a>
+          <a class="brand" href="#/home">Gunpey</a>
           <ul class="nav">
-            <li ng-class="{active : mode=='speed'}"><a href="" ng-click="game.modeSpeed()">Speed mode</a></li>
-            <li ng-class="{active : mode=='puzzle'}"><a href="" ng-click="game.modePuzzle()">Puzzle mode</a></li>
-            <li ng-class="{active : mode=='bonjour'}"><a href="" ng-click="game.bonjour()">Bonjour puzzle !</a></li>
+            <li ng-class="{active : $route.current.pageKey=='SPEED'}"><a href="#/speed">> Speed mode</a></li>
+            <li ng-class="{active : $route.current.pageKey=='PUZZLE'}"><a href="#/puzzle">> Puzzle mode</a></li>
+            <li ng-class="{active : $route.current.pageKey=='BONJOUR'}"><a href="#/bonjour">> Bonjour puzzle !</a></li>
           </ul>
         </div>
       </div>
 
-      <!--
-        HOME
-      -->
-      <div class='contentWrapper ng-cloak home' ng-show="mode=='home'">
-
-          <h1>Welcome !</h1>
-          Here is my online adaptation of an old puzzle game : Gunpey.
-          <div class="row-fluid">
-            <h2>Instructions</h2>
-            <div class="span3">
-                <br/>
-                <img width="100%" src="img/screen/goal.png">
-            </div>
-            <div class="span6">
-                <h3>Goal</h3>
-                You must connect the left and right sides by moving segments to create a continuous line.
-                <br/>
-                When a line is connected, it becomes yellow and disappears after few seconds.
-                <h3>Controls</h3>
-                Drag and drop a segment on the same column.
-            </div>
-
-          </div>
-          <div class="row-fluid">
-            <h2>Modes</h2>
-            <div class="span3">
-                <h3>Speed</h3>
-                <p>
-                  Segments come from the bottom at regular intervals.
-                  <br/>
-                  Be fast to create lines and so remove segments before they reach the top !
-                </p>
-                <p>
-                  You can fail one time for each column, the second time you lose...
-                  <br/>
-                  You score points for each deleted segment. The longer the line, the more you score points per segment, this is <b>combo</b> !
-                </p>
-                <button ng-click="game.modeSpeed()" class="btn btn-primary btn-large" type="button"><i class="icon-play"></i> Speed mode</button>
-            </div>
-            <div class="span3">
-              <img width="80%" src="img/screen/speed.png">
-            </div>
-            <div class="span3">
-                <h3>Puzzle</h3>
-                <p>
-                  Take your time and clear each stage in only one shot !
-                </p>
-                <button ng-click="game.modePuzzle()" class="btn btn-primary btn-large" type="button"><i class="icon-play"></i> Puzzle mode</button>
-            </div>
-            
-          </div>
-      </div>
-
-      <!--
-        GAME
-      -->
-      <div class='contentWrapper ng-cloak' ng-hide="mode=='home'">
-
-        <div class='content'>
-
-          <div class="row-fluid">
-
-            <div class="span3 info-panel">
-              <!-- SPEED -->
-              <div ng-show="mode=='speed'">
-                <h2>SCORE : {{score}}</h2>
-                <h3>Best score : {{bestScore}}</h3>
-                <h3>Best combo : {{combo}}</h3>
-                <button ng-click="game.modeSpeed()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Restart</button>
-                <!-- <button ng-click="game.pause()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Pause</button> -->
-              </div>
-              <!-- PUZZLE -->
-              <div ng-show="mode=='puzzle'">
-                <h2>STAGE {{level}}</h2>
-                <button ng-click="game.modePuzzle()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
-                <div ng-show="endPuzzle">
-                    <h3>Well done !</h3>
-                    <span>
-                        No more stage for the moment :(
-                        <br/>
-                        If you enjoyed and want more information or if you want to suggest your ideas or puzzle you're welcome !
-                        Write me at <a href="mailto:turtlelab@free.fr">turtlelab@free.fr</a>
-                        <br/>
-                        Vous pouvez écrire en français ;)
-                    </span>
-                </div>
-              </div>
-              <!-- BONJOUR -->
-              <div ng-show="mode=='bonjour'">
-                  <h2>Week {{week}}</h2>
-                  <h5>A new puzzle each week!</h5>
-                  <span>
-                    Connect left and right borders using all segments and clear the board in one shot.
-                  </span>
-                  <br/><br/>
-                  <button ng-click="game.bonjour()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
-                  <div style="margin-top:30px;">
-                    <script type="text/javascript" src="http://www.brainyquote.com/link/quotebr.js"></script>
-                    <small><i><a href="http://www.brainyquote.com/quotes_of_the_day.html" target="_blank">more Quotes</a></i></small>
-                  </div>
-              </div>
-            </div>
-
-            <div class="span9">
-              <div class=" board" style="display:inline-block">
-                <div style="text-align:center">
-                    <h1>{{message}}</h1>
-                </div>
-
-                 <ul ng-repeat="column in matrix" class="pull-left column-{{id}}" ng-class="{'first-col':$first, 'last-col':$last}" ng-init="id=$index">
-                      <li ng-show="mode=='speed'" class="column-head"><h2 ng-show="fail[id]">X</h2></li>
-                      <li ng-repeat="item in column"
-                          data-drop="true"
-                          ng-model='column'
-                          jqyoui-droppable="{index: {{$index}}, onDrop:'game.dropCallback(item.title, $index)'}"
-                          data-jqyoui-options="{accept:'.on-col-{{id}}', hoverClass:'drop-hover'}">
-
-                      <div
-                          class="thumbnail on-col-{{id}}"
-                          ng-class="{on:item.on}"
-                          data-drag="{{item.drag}}"
-                          data-jqyoui-options="{revert: 'invalid', containment:'.column-{{id}}', cursor:'ns-resize', grid:[50,1]}"
-                          ng-model="column"
-                          jqyoui-draggable="{index: {{$index}},animate:true,onStart:'game.dragStart'}">
-
-                        <img ng-show="item.type" ng-attr-src="img/{{item.type}}{{item.on ? '_light' : ''}}.png"  ></img>
-
-                      </div>
-
-                    </li>
-                 </ul>
-
-              </div>
-            </div>
-
-          </div> <!-- ROW -->
-
-        </div> <!-- CONTENT-->
-
-      </div> <!-- WRAPPER -->
-
-    </div> <!-- GAME ctrl -->
+      <div ng-view></div>
 
   </body>
 

@@ -1,5 +1,37 @@
 
-var App = angular.module('gunpey', ['ngDragDrop']);
+var App = angular.module('gunpey', ['ngRoute', 'ngDragDrop']);
+
+App.config(['$routeProvider', function($routeProvider) {
+    $routeProvider.
+        when('/home', {
+            templateUrl: 'partials/home.html'
+        }).
+        when('/speed', {
+            templateUrl: 'partials/game.html',
+            controller: 'gameCtrl',
+            controllerAs: 'game',
+            pageKey : 'SPEED'
+        }).
+        when('/puzzle', {
+            templateUrl: 'partials/game.html',
+            controller: 'gameCtrl',
+            controllerAs: 'game',
+            pageKey : 'PUZZLE'
+        }).
+        when('/bonjour', {
+            templateUrl: 'partials/game.html',
+            controller: 'gameCtrl',
+            controllerAs: 'game',
+            pageKey : 'BONJOUR'
+        }).
+        otherwise({
+            redirectTo: '/home'
+        });
+}]);
+
+App.controller('menuCtrl', function($scope, $route) {
+  $scope.$route = $route;
+});
 
 App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
 

@@ -1,0 +1,84 @@
+ <div class='contentWrapper ng-cloak'>
+
+  <div class='content'>
+
+    <div class="row-fluid">
+
+      <div class="span3 info-panel">
+        <!-- SPEED -->
+        <div ng-show="mode=='speed'">
+          <h2>SCORE : {{score}}</h2>
+          <h3>Best score : {{bestScore}}</h3>
+          <h3>Best combo : {{combo}}</h3>
+          <button ng-click="game.modeSpeed()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Restart</button>
+          <!-- <button ng-click="game.pause()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Pause</button> -->
+        </div>
+        <!-- PUZZLE -->
+        <div ng-show="mode=='puzzle'">
+          <h2>STAGE {{level}}</h2>
+          <button ng-click="game.modePuzzle()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
+          <div ng-show="endPuzzle">
+              <h3>Well done !</h3>
+              <span>
+                  No more stage for the moment :(
+                  <br/>
+                  If you enjoyed and want more information or if you want to suggest your ideas or puzzle you're welcome !
+                  Write me at <a href="mailto:turtlelab@free.fr">turtlelab@free.fr</a>
+                  <br/>
+                  Vous pouvez écrire en français ;)
+              </span>
+          </div>
+        </div>
+        <!-- BONJOUR -->
+        <div ng-show="mode=='bonjour'">
+            <h2>Week {{week}}</h2>
+            <h5>A new puzzle each week!</h5>
+            <span>
+              Connect left and right borders using all segments and clear the board in one shot.
+            </span>
+            <br/><br/>
+            <button ng-click="game.bonjour()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
+            <div style="margin-top:30px;">
+              <script type="text/javascript" src="http://www.brainyquote.com/link/quotebr.js"></script>
+              <small><i><a href="http://www.brainyquote.com/quotes_of_the_day.html" target="_blank">more Quotes</a></i></small>
+            </div>
+        </div>
+      </div>
+
+      <div class="span9">
+        <div class=" board" style="display:inline-block">
+          <div style="text-align:center">
+              <h1>{{message}}</h1>
+          </div>
+
+           <ul ng-repeat="column in matrix" class="pull-left column-{{id}}" ng-class="{'first-col':$first, 'last-col':$last}" ng-init="id=$index">
+                <li ng-show="mode=='speed'" class="column-head"><h2 ng-show="fail[id]">X</h2></li>
+                <li ng-repeat="item in column"
+                    data-drop="true"
+                    ng-model='column'
+                    jqyoui-droppable="{index: {{$index}}, onDrop:'game.dropCallback(item.title, $index)'}"
+                    data-jqyoui-options="{accept:'.on-col-{{id}}', hoverClass:'drop-hover'}">
+
+                <div
+                    class="thumbnail on-col-{{id}}"
+                    ng-class="{on:item.on}"
+                    data-drag="{{item.drag}}"
+                    data-jqyoui-options="{revert: 'invalid', containment:'.column-{{id}}', cursor:'ns-resize', grid:[50,1]}"
+                    ng-model="column"
+                    jqyoui-draggable="{index: {{$index}},animate:true,onStart:'game.dragStart'}">
+
+                  <img ng-show="item.type" ng-attr-src="img/{{item.type}}{{item.on ? '_light' : ''}}.png"  ></img>
+
+                </div>
+
+              </li>
+           </ul>
+
+        </div>
+      </div>
+
+    </div> <!-- ROW -->
+
+  </div> <!-- CONTENT-->
+
+</div> <!-- WRAPPER -->
