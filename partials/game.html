@@ -51,7 +51,7 @@
               <h1>{{message}}</h1>
           </div>
 
-           <ul ng-repeat="column in matrix" class="pull-left column-{{id}}" ng-class="{'first-col':$first, 'last-col':$last}" ng-init="id=$index">
+           <ul ng-repeat="column in board.matrix" class="pull-left column-{{id}}" ng-class="{'first-col':$first, 'last-col':$last}" ng-init="id=$index">
                 <li ng-show="mode=='speed'" class="column-head"><h2 ng-show="fail[id]">X</h2></li>
                 <li ng-repeat="item in column"
                     data-drop="true"

@@ -33,56 +33,9 @@ App.controller('menuCtrl', function($scope, $route) {
   $scope.$route = $route;
 });
 
-App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
+App.factory('board', function() {
 
-  $scope.matrix = []
-  $scope.nbCol = 10;
-  $scope.nbLine = 10;
-
-  $scope.score = 0;
-  $scope.bestScore = parseInt(localStorage.getItem("gunpey.bestScore")) || 0;
-  $scope.combo = 0;
-  $scope.missed = 0;
-  $scope.fail = [];
-  $scope.message = "";
-  $scope.level = parseInt(localStorage.getItem("gunpey.level")) || 1;
-  $scope.endPuzzle = false;
-
-  var timeBeforeClear = 1000;
-  var difficultyThresholdStep = 1000;
-  var difficultyThreshold = difficultyThresholdStep;
-
-  var dragging = false;
-
-  /*
-    Really basic manual routing
-    Launch the mode according to url
-  */
-  function loadMode() {
-    var mode = $location.path().slice(1);
-    var modeHandler = {
-      'speed' : modeSpeed,
-      'puzzle' : modePuzzle,
-      'bonjour' : bonjour
-    }[mode];
-    if (modeHandler) {
-      modeHandler();
-    } else {
-      mode = 'home';
-    }
-    $scope.mode = mode;
-  }
-
-  this.dropCallback = function(event, ui, title, $index) {
-    check();
-    dragging = false;
-  };
-
-  this.dragStart = function() {
-    dragging = true;
-  }
-
-  /*
+    /*
     4 segment types :
 
     Type 1 : bottom-left to top-right
@@ -160,7 +113,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
     }
     
 
-    if (col == $scope.matrix.length-1) {
+    if (col == board.matrix.length-1) {
       item.on = true;
     } else {
 
@@ -170,7 +123,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
         for (var i=-1; i<=1;i++) {
           if (col+i <= 0) continue; 
           for (var j=-1; j<=1;j++) {
-            var column = $scope.matrix[col+i];
+            var column = board.matrix[col+i];
             var n =  column && column[idx+j];
             if (n && n.type && !n.marked && isConnected(item.type, n.type, i, j)) {
               //item.on = checkItem(col+i, idx+j, n) || item.on;
@@ -197,13 +150,109 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
     return item.on;
   }
 
+  function checkConnection() {
+      // Browse all items of the first column and follow connected segments
+      // Check if they are connected to the right border
+      var on = false;
+      for (var i in board.matrix[0]) {
+        i = parseInt(i);
+        var item = board.matrix[0][i];
+        if (item && item.type) {
+            on = checkItem(0, i, item) || on;
+        }
+      }
+      return on;
+  }
+
+  /*
+    Build the matrix and place items
+  */
+  function init(nbCol, nbRow) {
+    board.matrix = [];
+    for (i=0; i < nbCol; i++) {
+      addColumn(nbRow, 2);
+    }
+  }
+
+  function addColumn(nbRow, nbEmpty) {
+      var column = [];
+      for (j=0; j < nbRow; j++) {
+        var type = (j < nbEmpty || Math.random() > 0.8) ? 0 : Math.floor(Math.random() * 5);
+        column.push({
+          'type': type,
+          'drag': true
+        });
+      }
+      board.matrix.push(column);
+  }
+
+  var board = {
+    matrix : [],
+    checkConnection : checkConnection,
+    init : init,
+    addColumn : addColumn,
+  };
+
+    return board;
+});
+
+App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
+
+  $scope.board = board;
+  $scope.nbCol = 10;
+  $scope.nbRow = 10;
+
+  $scope.score = 0;
+  $scope.bestScore = parseInt(localStorage.getItem("gunpey.bestScore")) || 0;
+  $scope.combo = 0;
+  $scope.missed = 0;
+  $scope.fail = [];
+  $scope.message = "";
+  $scope.level = parseInt(localStorage.getItem("gunpey.level")) || 1;
+  $scope.endPuzzle = false;
+
+  var timeBeforeClear = 1000;
+  var difficultyThresholdStep = 200;
+  var difficultyThreshold = difficultyThresholdStep;
+
+  var dragging = false;
+
+  /*
+    Really basic manual routing
+    Launch the mode according to url
+  */
+  function loadMode() {
+    var mode = $location.path().slice(1);
+    var modeHandler = {
+      'speed' : modeSpeed,
+      'puzzle' : modePuzzle,
+      'bonjour' : bonjour
+    }[mode];
+    if (modeHandler) {
+      modeHandler();
+    } else {
+      mode = 'home';
+    }
+    $scope.mode = mode;
+  }
+
+  this.dropCallback = function(event, ui, title, $index) {
+    check();
+    dragging = false;
+  };
+
+  this.dragStart = function() {
+    dragging = true;
+  }
+
+
 
   /*
     set the property (a) of all items to false
   */
   function reset(a) {
-    for (var i in $scope.matrix) {
-      var column = $scope.matrix[i];
+    for (var i in board.matrix) {
+      var column = board.matrix[i];
       for (j in column) {
         column[j][a] = false;
       }
@@ -229,9 +278,9 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
       }
 
       // Raise difficulty (nb columns) according to score
-      if (($scope.score >= difficultyThreshold) && ($scope.matrix.length < 10)) {
+      if (($scope.score >= difficultyThreshold) && (board.matrix.length < 10)) {
         difficultyThreshold += difficultyThresholdStep;
-        addColumn(5);
+        board.addColumn($scope.nbRow, 5);
       }
     }
 
@@ -246,8 +295,8 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
   function clear() {
     var count = 0;
     var dirty = false;
-    for (var i in $scope.matrix) {
-      var column = $scope.matrix[i];
+    for (var i in board.matrix) {
+      var column = board.matrix[i];
       for (var j in column) {
         var item = column[j];
         if (item.on) {
@@ -287,18 +336,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
 
       clearTimeout(timeoutClear);
 
-      // Browse all items of the first column and follow connected segments
-      // Check if they are connected to the right border
-      var on = false;
-      for (var i in $scope.matrix[0]) {
-        i = parseInt(i);
-        var item = $scope.matrix[0][i];
-        if (item && item.type) {
-            on = checkItem(0, i, item) || on;
-        }
-      }
-
-      if (on) {
+      if (board.checkConnection()) {
         timeoutClear = setTimeout(clear, timeBeforeClear);
       }
   }
@@ -313,8 +351,8 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
 
     function disable() {
       var item;
-      for (var j in $scope.matrix) {
-        item = $scope.matrix[j][i];
+      for (var j in board.matrix) {
+        item = board.matrix[j][i];
         if (item) {
           item.drag = false;
         }
@@ -344,8 +382,8 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
     Randomly insert new items by the bottom
   */
   function scroll() {
-    for (var i in $scope.matrix) {
-      var column = $scope.matrix[i];
+    for (var i in board.matrix) {
+      var column = board.matrix[i];
       for (var j in column) {
         var item = column[j];
         // Scroll item type
@@ -376,27 +414,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
     }
   }
 
-  /*
-    Build the matrix and place items
-  */
-  function init() {
-    $scope.matrix = [];
-    for (i=0; i < $scope.nbCol; i++) {
-      addColumn(2);
-    }
-  }
 
-  function addColumn(nbEmpty) {
-      var column = [];
-      for (j=0; j < $scope.nbLine; j++) {
-        var type = (j < nbEmpty || Math.random() > 0.8) ? 0 : Math.floor(Math.random() * 5);
-        column.push({
-          'type': type,
-          'drag': true
-        });
-      }
-      $scope.matrix.push(column);
-  }
 
     /**************
       PUZZLE MODE
@@ -406,7 +424,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
     Rebuild the matrix according to data
     */
     function loadMatrix(data) {
-        $scope.matrix = [];
+        board.matrix = [];
         for (var i = 0; i < data.length; i++) {
             var column = [];
             for (var j = 0; j < data[i].length; j++) {
@@ -415,7 +433,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
                   'drag' : true
                 });
             }
-           $scope.matrix.push(column);
+           board.matrix.push(column);
         }
       }
 
@@ -486,10 +504,10 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
   function modeSpeed() {
     $scope.mode = 'speed';
     $scope.nbCol = 5;
-    $scope.nbLine = 10;
+    $scope.nbRow = 10;
     timeBeforeClear = 1000;
     startMode();
-    init();
+    board.init($scope.nbCol, $scope.nbRow);
     check();
     interval = setInterval(update, 5000);
   }
@@ -510,6 +528,12 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location) {
   }
 
   loadMode();
+
+  $scope.$on('$destroy', function () {
+    clearInterval(interval);
+    clearInterval(timeoutClear);
+  });
+
 });
 
 Date.prototype.getWeek = function() {
