@@ -212,7 +212,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
   $scope.endPuzzle = false;
 
   var timeBeforeClear = 1000;
-  var difficultyThresholdStep = 200;
+  var difficultyThresholdStep = 1000;
   var difficultyThreshold = difficultyThresholdStep;
 
   var dragging = false;
@@ -505,7 +505,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
     $scope.mode = 'speed';
     $scope.nbCol = 5;
     $scope.nbRow = 10;
-    timeBeforeClear = 1000;
+    timeBeforeClear = 1300;
     startMode();
     board.init($scope.nbCol, $scope.nbRow);
     check();
@@ -532,6 +532,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
   $scope.$on('$destroy', function () {
     clearInterval(interval);
     clearInterval(timeoutClear);
+    board.matrix = [];
   });
 
 });
