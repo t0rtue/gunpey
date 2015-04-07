@@ -60,6 +60,13 @@ App.factory('board', function() {
      /\
     /  \
 
+    type 5 : virtual "cross" segment used to represent the connection to borders (start and end)
+             It is a trick to manage borders in the connection algorithm
+
+    \ /
+     X
+    / \
+
     For each line type, the connections matrix defines which types are neighbors
     according to their relative position.
     There is 8 relative positions for a segment (3x3 square with the segment in the middle).
@@ -67,27 +74,33 @@ App.factory('board', function() {
   var connections = [
     // Type 1 neighborhood
     [
-      [[   ],[2,4],[1,4]],
-      [[2,4],[   ],[2,3]],
-      [[1,3],[2,3],[   ]],
+      [[     ],[2,4],[1,4,5]],
+      [[2,4,5],[   ],[2,3,5]],
+      [[1,3,5],[2,3],[     ]],
     ],
     // Type 2 neighborhood
     [
-      [[2,4],[1,4],[   ]],
-      [[1,3],[   ],[1,4]],
-      [[   ],[1,3],[2,3]]
+      [[2,4,5],[1,4],[     ]],
+      [[1,3,5],[   ],[1,4,5]],
+      [[     ],[1,3],[2,3,5]]
     ],
     // Type 3 neighborhood
     [
-      [[2,4],[1,2],[1,4]],
-      [[1,3],[   ],[2,3]],
-      [[   ],[   ],[   ]]
+      [[2,4],[1,2],[1,4,5]],
+      [[1,3],[   ],[2,3,5]],
+      [[   ],[   ],[     ]]
     ],
     // Type 4 neighborhood
     [
-      [[   ],[   ],[   ]],
-      [[2,4],[   ],[1,4]],
-      [[1,3],[1,2],[2,3]]
+      [[     ],[   ],[     ]],
+      [[2,4,5],[   ],[1,4,5]],
+      [[1,3,5],[1,2],[2,3,5]]
+    ],
+    // Type 5 neighborhood
+    [
+      [[2,4    ],[   ],[1,4    ]],
+      [[1,2,3,4],[   ],[1,2,3,4]],
+      [[1,3    ],[   ],[2,3    ]]
     ]
   ];
 
@@ -121,12 +134,11 @@ App.factory('board', function() {
       // Avoid the "electricity" get out from the side where it comes from
       var neighbors =[];
         for (var i=-1; i<=1;i++) {
-          if (col+i <= 0) continue; 
+          if (col+i <= 0) continue;
           for (var j=-1; j<=1;j++) {
             var column = board.matrix[col+i];
             var n =  column && column[idx+j];
             if (n && n.type && !n.marked && isConnected(item.type, n.type, i, j)) {
-              //item.on = checkItem(col+i, idx+j, n) || item.on;
               n.marked = true;
               neighbors.push({col:col+i, line:idx+j, item:n});
             }
@@ -137,7 +149,6 @@ App.factory('board', function() {
       item.on = false;
       for (n in neighbors) {
         item.on = checkItem(neighbors[n].col, neighbors[n].line, neighbors[n].item) || item.on;
-        // neighbors[n].item.marked = false;
       }
 
       // Third pass to unmark neighbors after all recursive process
@@ -150,17 +161,33 @@ App.factory('board', function() {
     return item.on;
   }
 
+  /*
+    Turn "on" all segments properly connected to both borders
+    Return true if borders are connected
+  */
   function checkConnection() {
+
+      var on = false;
+
+      // We add 2 "virtual" columns to represent left and right borders
+      var border = [];
+      for (var i=0; i < board.matrix[0].length; i++) {
+        border.push({type:5});
+      }
+      board.matrix.unshift(border);
+      board.matrix.push(angular.copy(border));
+
       // Browse all items of the first column and follow connected segments
       // Check if they are connected to the right border
-      var on = false;
-      for (var i in board.matrix[0]) {
-        i = parseInt(i);
+      for (var i=0; i < board.matrix[0].length; i++) {
         var item = board.matrix[0][i];
-        if (item && item.type) {
-            on = checkItem(0, i, item) || on;
-        }
+        on = checkItem(0, i, item) || on;
       }
+
+      // Remove the 2 virtual columns
+      board.matrix.pop();
+      board.matrix.shift();
+
       return on;
   }
 
