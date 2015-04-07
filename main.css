@@ -45,9 +45,10 @@ body, button {
 
   -o-transition: none;
 
-  /*cursor: pointer;*/
-
   /*background: rgba(182, 173, 123,0.5);*/
+
+/*  background: url('img/1.png') no-repeat center;
+  background-size: 100% 100%;*/
 
 }
 

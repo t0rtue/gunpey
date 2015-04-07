@@ -24,6 +24,12 @@ App.config(['$routeProvider', function($routeProvider) {
             controllerAs: 'game',
             pageKey : 'BONJOUR'
         }).
+        when('/editor', {
+            templateUrl: 'partials/editor.html',
+            controller: 'editorCtrl',
+            controllerAs: 'editor',
+            pageKey : 'EDITOR'
+        }).
         otherwise({
             redirectTo: '/home'
         });
@@ -213,11 +219,39 @@ App.factory('board', function() {
       board.matrix.push(column);
   }
 
+  function isAllOn() {
+    var dirty = false;
+    for (var i in board.matrix) {
+      var column = board.matrix[i];
+      for (var j in column) {
+        var item = column[j];
+        if (item.type && !item.on) {
+          dirty = true;
+        }
+      }
+    }
+    return !dirty;
+  }
+
+  /*
+    set the property (a) of all items to false
+  */
+  function reset(a) {
+    for (var i in board.matrix) {
+      var column = board.matrix[i];
+      for (j in column) {
+        column[j][a] = false;
+      }
+    }
+  }
+
   var board = {
     matrix : [],
     checkConnection : checkConnection,
     init : init,
     addColumn : addColumn,
+    isAllOn : isAllOn,
+    reset  : reset
   };
 
     return board;
@@ -272,19 +306,6 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
     dragging = true;
   }
 
-
-
-  /*
-    set the property (a) of all items to false
-  */
-  function reset(a) {
-    for (var i in board.matrix) {
-      var column = board.matrix[i];
-      for (j in column) {
-        column[j][a] = false;
-      }
-    }
-  }
 
     /***************
       SPEED MODE
@@ -359,7 +380,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
     Launch the clear process for 'on' segments.
   */
   function check() {
-      reset('on');
+      board.reset('on');
 
       clearTimeout(timeoutClear);
 
