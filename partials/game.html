@@ -15,19 +15,38 @@
         </div>
         <!-- PUZZLE -->
         <div ng-show="mode=='puzzle'">
-          <h2>STAGE {{level}}</h2>
-          <button ng-click="game.modePuzzle()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
+          <h2>{{puzzleName || 'puzzle'}}</h2>
+          <button ng-click="game.reload()" class="btn btn-large" type="button"><i class="icon-refresh"></i> Retry</button>
           <div ng-show="endPuzzle">
-              <h3>Well done !</h3>
+            <hr/>
+              <h4>Well done !</h4>
               <span>
                   No more stage for the moment :(
                   <br/>
-                  If you enjoyed and want more information or if you want to suggest your ideas or puzzle you're welcome !
-                  Write me at <a href="mailto:turtlelab@free.fr">turtlelab@free.fr</a>
+                  You can play puzzles made by the community or <a href="#/editor">create your own puzzles</a>.
+                  And don't forget <a href="#/bonjour">the puzzle of the week</a>.
                   <br/>
-                  Vous pouvez écrire en français ;)
               </span>
           </div>
+
+          <hr/>
+          <table class="table table-condensed table-hover">
+            <caption>Progression</caption>
+            <tr ng-click="game.level(level)">
+                <td>Stage {{level}}</td>
+            </tr>
+          </table>
+
+          <table class="table table-condensed table-hover">
+            <caption>Community puzzles</caption>
+            <tr><th>Name</th><th>Author</th><th></th></tr>
+            <tr ng-repeat="puzzle in communityPuzzles" ng-click="game.playPuzzle(puzzle)">
+                <td>{{puzzle.name || 'puzzle'}}</td>
+                <td>{{puzzle.author || 'anonym'}}</td>
+                <td><img ng-show="puzzle.done" width="20" height="20" src="img/success-icon.png"></img></td>
+            </tr>
+          </table>
+
         </div>
         <!-- BONJOUR -->
         <div ng-show="mode=='bonjour'">

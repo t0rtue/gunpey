@@ -271,6 +271,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
   $scope.message = "";
   $scope.level = parseInt(localStorage.getItem("gunpey.level")) || 1;
   $scope.endPuzzle = false;
+  $scope.communityPuzzles = [];
 
   var timeBeforeClear = 1000;
   var difficultyThresholdStep = 1000;
@@ -472,6 +473,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
     Rebuild the matrix according to data
     */
     function loadMatrix(data) {
+        $scope.currentData = data;
         board.matrix = [];
         for (var i = 0; i < data.length; i++) {
             var column = [];
@@ -483,7 +485,12 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
             }
            board.matrix.push(column);
         }
-      }
+    }
+
+    this.reload = function () {
+        $scope.message = "";
+        loadMatrix($scope.currentData);
+    }
 
     function load(name) {
       $http({method: 'GET', url: 'level/' + name + '.json'}).
@@ -495,8 +502,13 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
     }
 
     function level(n) {
+      $scope.message = "";
+      board.matrix = [];
+      $scope.puzzleName = "STAGE " + n;
+      $scope.story = true;
       load(n);
     }
+    this.level = level;
 
     function nextLevel() {
       $scope.level++;
@@ -508,7 +520,24 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
       if (dirty) {
         gameover("NOT CLEARED");
       } else {
-        nextLevel();
+        if ($scope.story) {
+          nextLevel();
+        } else {
+          $scope.message = "YEAH !";
+
+          if (!$scope.puzzle.done) {
+            $scope.puzzle.done = true;
+
+            // Save this puzzle is done
+            var d = localStorage.getItem('gunpey.p.done');
+            if (d) {
+              d += ',' + $scope.puzzle.id;
+            } else {
+              d = $scope.puzzle.id;
+            }
+            localStorage.setItem('gunpey.p.done', d);
+          }
+        }
       }
     }
 
@@ -518,6 +547,31 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
       } else {
         $scope.message = "WELL DONE !";
       }
+    }
+
+    function loadCommunityPuzzles() {
+
+      // Retrieve puzzles done from storage
+      var d = localStorage.getItem('gunpey.p.done');
+      var puzzlesDone = d ? d.split(',') : [];
+
+      // Get puzzles list
+      $http({method: 'GET', url: 'level/community.json'}).
+          success(function(resp, status, headers, config) {
+            for (i = 0; i < resp.length; i++) {
+              resp[i].id = i;
+              resp[i].done = (puzzlesDone.indexOf(''+i) != -1);
+            }
+            $scope.communityPuzzles = resp;
+          })
+    }
+
+    this.playPuzzle = function(p) {
+      $scope.message = "";
+      $scope.puzzle = p;
+      $scope.puzzleName = p.name;
+      $scope.story = false;
+      loadMatrix(p.start);
     }
 
   /*
@@ -545,6 +599,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
       $scope.level = 1;
     }
     timeBeforeClear = 2000;
+    loadCommunityPuzzles();
     level($scope.level);
   }
   this.modePuzzle = modePuzzle;

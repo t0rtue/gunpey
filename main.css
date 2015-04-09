@@ -118,3 +118,7 @@ li.drop-hover {
 .btn-large i {
   margin-top : 0 !important;
 }
+
+table tr:hover {
+  cursor: pointer;
+}
