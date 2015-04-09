@@ -272,6 +272,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
   $scope.level = parseInt(localStorage.getItem("gunpey.level")) || 1;
   $scope.endPuzzle = false;
   $scope.communityPuzzles = [];
+  $scope.weeklyPuzzles = [];
 
   var timeBeforeClear = 1000;
   var difficultyThresholdStep = 1000;
@@ -516,6 +517,30 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
       level($scope.level);
     }
 
+    // Get an array from storage
+    function _getArray(key) {
+        var d = localStorage.getItem('gunpey.' + key);
+        return (d ? d.split(',') : []);
+    }
+
+    // Set and save current puzzle is done
+    function _setCurrentPuzzleDone(key) {
+      var item = 'gunpey.' + key + '.done';
+
+      if (!$scope.puzzle.done) {
+        $scope.puzzle.done = true;
+
+        // Save this puzzle is done
+        var d = localStorage.getItem(item);
+        if (d) {
+          d += ',' + $scope.puzzle.id;
+        } else {
+          d = $scope.puzzle.id;
+        }
+        localStorage.setItem(item, d);
+      }
+    }
+
     function validateStage(dirty) {
       if (dirty) {
         gameover("NOT CLEARED");
@@ -524,19 +549,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
           nextLevel();
         } else {
           $scope.message = "YEAH !";
-
-          if (!$scope.puzzle.done) {
-            $scope.puzzle.done = true;
-
-            // Save this puzzle is done
-            var d = localStorage.getItem('gunpey.p.done');
-            if (d) {
-              d += ',' + $scope.puzzle.id;
-            } else {
-              d = $scope.puzzle.id;
-            }
-            localStorage.setItem('gunpey.p.done', d);
-          }
+          _setCurrentPuzzleDone('p');
         }
       }
     }
@@ -546,14 +559,30 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
         gameover("NOT CLEARED");
       } else {
         $scope.message = "WELL DONE !";
+        _setCurrentPuzzleDone('w');
       }
+    }
+
+    function loadWeekPuzzles() {
+      var puzzlesDone = _getArray('w.done');
+      var currentWeek = (new Date()).getWeek();
+      var firstWeek = 14;
+
+      for (i=currentWeek; i>=firstWeek; i--) {
+        $scope.weeklyPuzzles.push({
+          id : i,
+          done : (puzzlesDone.indexOf(''+i) != -1)
+        });
+      }
+
+      // Set current week puzzle
+      $scope.puzzle = $scope.weeklyPuzzles[0];
+      load('week/' + currentWeek);
     }
 
     function loadCommunityPuzzles() {
 
-      // Retrieve puzzles done from storage
-      var d = localStorage.getItem('gunpey.p.done');
-      var puzzlesDone = d ? d.split(',') : [];
+      var puzzlesDone = _getArray('p.done');
 
       // Get puzzles list
       $http({method: 'GET', url: 'level/community.json'}).
@@ -572,6 +601,13 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
       $scope.puzzleName = p.name;
       $scope.story = false;
       loadMatrix(p.start);
+    }
+
+    this.playWeekPuzzle =function(p) {
+      $scope.message = "";
+      $scope.puzzle = p;
+      board.matrix = [];
+      load('week/' + p.id);
     }
 
   /*
@@ -620,8 +656,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
     $scope.mode = 'bonjour';
     startMode();
     timeBeforeClear = 2000;
-    $scope.week = (new Date()).getWeek();
-    level('week/' + $scope.week);
+    loadWeekPuzzles();
   }
   this.bonjour = bonjour;
 
