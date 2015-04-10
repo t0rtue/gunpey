@@ -580,6 +580,62 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
       load('week/' + currentWeek);
     }
 
+    /*
+       Load community puzzles from the gunpey spreadsheets (on google drive)
+       This sheet is automaticelly updated (IFTTT) for each new puzzle tweet #6µnp3λ
+       A valid puzzle tweet is produced by the share button on the editor section
+       Sheet has 2 columns : 'author' (the twitter user login) and 'data' (the tweet content)
+
+       tweet data format : "00020000000230000000000040000000201020000000000040 Puzzle name #6µnp3λ"
+       fields            :  |  row1   |  row2   |  row3   |  row4   |  row5  | |  name   | |htag |
+
+       The number of rows may vary (up to 11) but there is always 10 digits in a row
+       Max length : 10*11+1+20+1+7 = 139 (max tweet length = 140 :)
+    */
+    function _loadFromSheet() {
+
+      var puzzlesDone = _getArray('p.done');
+
+      var sheetID = "1lqXUJJlWKqXUxyDm2w2JGxTdfl6_RxPUrB0OlHNjQGA";
+      $http({
+        method: 'GET',
+        url: 'https://spreadsheets.google.com/feeds/list/'+ sheetID +'/od6/public/values?alt=json'}
+        ).success(function(resp) {
+            var entries = resp.feed.entry || [];
+            // Browse all row of the sheet
+            for (var e = 0; e < entries.length; e++) {
+              var entry = entries[e];
+              var author = entry['gsx$author']['$t'];
+              var data = entry['gsx$data']['$t'];
+              var d = data.match(/^([0-4]*) ([ \w]*) #/);
+
+              // If valid format ([0]:match, [1]:matrix string, [2]:puzzle name)
+              if (d) {
+                // Cut the string to recreate the matrix of the starting puzzle position
+                var columns = d[1].match(/.{10}/g);
+                var start = [];
+                for (i=0; i < columns.length; i++) {
+                  var values = columns[i].split("");
+                  for (j=0; j<values.length; j++) {
+                    values[j] = parseInt(values[j]);
+                  }
+                  start.push(values);
+                }
+
+                // Add the puzzle data on the list
+                // Puzzles from the sheet have an ID who looks like "t26"
+                $scope.communityPuzzles.push({
+                  id : 't'+e,
+                  author : author,
+                  name : d[2],
+                  start : start,
+                  done : (puzzlesDone.indexOf('t'+e) != -1),
+                })
+              }
+            }
+        })
+    }
+
     function loadCommunityPuzzles() {
 
       var puzzlesDone = _getArray('p.done');
@@ -592,7 +648,10 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
               resp[i].done = (puzzlesDone.indexOf(''+i) != -1);
             }
             $scope.communityPuzzles = resp;
+
+            _loadFromSheet();
           })
+
     }
 
     this.playPuzzle = function(p) {

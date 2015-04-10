@@ -91,10 +91,10 @@
         </div> <!-- ROW -->
         <!-- <hr/> -->
         <div class="row-fluid">
-            <form class=" form-inline">
+            <form class="form-inline">
                 <legend>Information</legend>
                 <label class="control-label" for="inputName">Puzzle</label>
-                <input ng-model="puzzle.name" type="text" id="inputName" placeholder="Puzzle name">
+                <input ng-model="puzzle.name" type="text" id="inputName" pattern="^[ \w]*$" maxlength="20" placeholder="Puzzle name" required>
                 <label class="control-label" for="inputAuthor">created by</label>
                 <input ng-model="puzzle.author" type="text" id="inputAuthor" placeholder="Author name">
             </form>
@@ -102,15 +102,29 @@
 
         <div class="row-fluid">
             <legend>Share</legend>
-            The sharing process is not yet automated :(
+
+            <div>
+              <h4>Via twitter</h4>
+              If you share using twitter, your puzzle will be automatically available after a few minutes in the Puzzle mode section!
+              <br/>
+              Your twitter login will be displayed as the author of the puzzle.
+              <br/>
+              <div class="alert">
+                <strong>Warning!</strong> Do not edit the tweet message.
+              </div>
+                <a href="https://twitter.com/intent/tweet?button_hashtag=6%C2%B5np3%CE%BB&text={{puzzleStringData}}%20{{puzzle.name}}" class="btn btn-large btn-primary"><i class="icon-share icon-white"></i> Share the puzzle</a>
+            </div>
             <br/>
-            You can mail me the following puzzle data at <a href="mailto:turtlelab@free.fr?subject=[puzzle]&body={{puzzle}}">turtlelab@free.fr</a> and I will add it, or send me the data the way you can... :p
-            <br/>
-            <br/>
-            <form class="form">
-                <label class="control-label" for="inputData">Data (do not edit) : </label>
-                <textarea id="inputData" rows="1" placeholder="auto data">{{puzzle}}</textarea>
-            </form>
+            <div>
+              <h4>Via mail</h4>
+              You can mail me the following puzzle data at <a href="mailto:turtlelab@free.fr?subject=[puzzle]&body={{puzzle}}">turtlelab@free.fr</a> and I will add it, or send me the data the way you can... :p
+              <br/>
+              <br/>
+              <form class="form">
+                  <label class="control-label" for="inputData">Data (do not edit) : </label>
+                  <textarea id="inputData" rows="1" placeholder="auto data">{{puzzle}}</textarea>
+              </form>
+            </div>
         </div>
 
     </div>

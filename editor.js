@@ -96,6 +96,8 @@ App.controller('editorCtrl', function($scope, $timeout, $http, board) {
 
     this.tagStart = function() {
         $scope.puzzle.start = angular.copy($scope.data);
+        // Stringify the 2-dimensional data array and remove all commas
+        $scope.puzzleStringData = $scope.data.join().replace(/,/g,'');
     }
 
     this.tagSolution = function() {
