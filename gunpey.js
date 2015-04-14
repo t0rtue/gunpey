@@ -640,16 +640,22 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
 
       var puzzlesDone = _getArray('p.done');
 
-      // Get puzzles list
-      $http({method: 'GET', url: 'level/community.json'}).
-          success(function(resp, status, headers, config) {
-            for (i = 0; i < resp.length; i++) {
-              resp[i].id = i;
-              resp[i].done = (puzzlesDone.indexOf(''+i) != -1);
-            }
-            $scope.communityPuzzles = resp;
+      var gistID = 'f0b1b8ba58c460c9eb46';
 
+      // Get community puzzles lists
+      // First, from gists
+      $http({method: 'GET', url: 'https://api.github.com/gists/' + gistID}).
+          success(function(resp, status, headers, config) {
+            var puzzles = angular.fromJson(resp.files.puzzles.content);
+            for (i = 0; i < puzzles.length; i++) {
+              puzzles[i].id = i;
+              puzzles[i].done = (puzzlesDone.indexOf(''+i) != -1);
+            }
+            $scope.communityPuzzles = puzzles;
+
+            // Then from spreadsheet
             _loadFromSheet();
+
           })
 
     }
