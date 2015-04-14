@@ -607,7 +607,7 @@ App.controller('gameCtrl', function($scope, $timeout, $http, $location, board) {
               var entry = entries[e];
               var author = entry['gsx$author']['$t'];
               var data = entry['gsx$data']['$t'];
-              var d = data.match(/^([0-4]*) ([ \w]*) #/);
+              var d = data.match(/^([0-4]*) (.*) #6/);
 
               // If valid format ([0]:match, [1]:matrix string, [2]:puzzle name)
               if (d) {
