@@ -40,7 +40,7 @@
           <table class="table table-condensed table-hover">
             <caption>Community puzzles</caption>
             <tr><th>Name</th><th>Author</th><th></th></tr>
-            <tr ng-repeat="puzzle in communityPuzzles" ng-click="game.playPuzzle(puzzle)">
+            <tr ng-repeat="puzzle in communityPuzzles" ng-click="game.playPuzzle(puzzle)" ng-if="!puzzle.invalid">
                 <td>{{puzzle.name || 'puzzle'}}</td>
                 <td>{{puzzle.author || 'anonym'}}</td>
                 <td><img ng-show="puzzle.done" width="20" height="20" src="img/success-icon.png"></img></td>
