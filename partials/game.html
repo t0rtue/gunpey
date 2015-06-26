@@ -63,7 +63,7 @@
 
             <hr/>
             <table class="table table-condensed table-hover">
-               <tr ng-repeat="puzzle in weeklyPuzzles" ng-click="game.playWeekPuzzle(puzzle)">
+               <tr ng-repeat="puzzle in weeklyPuzzles | limitTo:11" ng-click="game.playWeekPuzzle(puzzle)">
                   <td>Week {{puzzle.id}}</td>
                   <td><img ng-show="puzzle.done" width="20" height="20" src="img/success-icon.png"></img></td>
               </tr>
